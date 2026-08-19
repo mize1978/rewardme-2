@@ -71,6 +71,9 @@ RSpec.configure do |config|
   # 各 spec 側で type: :component を明示する方針。
   config.include ViewComponent::TestHelpers, type: :component
 
+  # FactoryBot の create / build を各 spec からそのまま呼べるようにする。
+  config.include FactoryBot::Syntax::Methods
+
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:

@@ -1,5 +1,12 @@
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  # RewardMe 2 の正式な入口。完成モックの Dashboard に対応し、MyRoom はこの画面の中の領域として置く。
+  # 詳細は docs/design-decisions.md の DD-001 を参照。
+  root "dashboards#show"
+
+  # 認証。Rails 8.1 Authentication Generator の構造を使うが、
+  # 実装のあるアクションだけを公開する。
+  resource :session, only: %i[ new create destroy ]
+  resource :registration, only: %i[ new create ]
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
@@ -15,7 +22,4 @@ Rails.application.routes.draw do
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
-
-  # Defines the root path route ("/")
-  # root "posts#index"
 end

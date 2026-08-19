@@ -18,6 +18,9 @@
   --color-brand-pink-soft: #f9a8d4;
   --color-brand-purple: #a78bfa;
 
+  /* 状態 */
+  --color-danger: #ff8fa3;
+
   /* テキスト */
   --color-ink: #f4ecff;
   --color-ink-muted: #a294bd;
