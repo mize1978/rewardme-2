@@ -74,6 +74,9 @@ RSpec.configure do |config|
   # FactoryBot の create / build を各 spec からそのまま呼べるようにする。
   config.include FactoryBot::Syntax::Methods
 
+  # 「今日」の判定を伴う spec で travel_to / travel_back を使えるようにする。
+  config.include ActiveSupport::Testing::TimeHelpers
+
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:

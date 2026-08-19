@@ -11,6 +11,9 @@ class User < ApplicationRecord
   # トークンの生成は従来どおり有効。
   has_secure_password validations: false
   has_many :sessions, dependent: :destroy
+  # Task は必ず1人の User に属する（docs/product-specs/task.md 1章）。
+  # User を削除したとき Task をどう扱うかは未確定のため、dependent は指定しない。
+  has_many :tasks
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 
