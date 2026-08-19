@@ -1,0 +1,58 @@
+<%#
+  完成モック（rewardme_mock_3.html）の .nav-col.card に対応する領域。
+  モックどおり「ブランド」「ナビゲーション」の2ブロックで構成する。
+  幅はこのコンポーネントでは決めず、置き場所（グリッドの列）側の責務とする。
+%>
+<aside class="w-full rounded-card border border-hairline bg-surface bg-linear-to-b from-white/[0.035] to-transparent px-5 py-4.5 shadow-card">
+  <%# ブランドはサイト名であってページ見出しではないため、見出し要素は使わない。
+      h1 はこのコンポーネントを置く各ページ側が、そのページ固有の見出しに使う。 %>
+  <div class="flex items-center gap-2.5 px-1">
+    <span aria-hidden="true" class="text-2xl leading-none drop-shadow-[0_0_10px_rgba(255,142,196,0.5)]">🎀</span>
+    <div>
+      <p class="bg-linear-to-r from-[#ffb3d9] to-[#ff7ab8] bg-clip-text text-2xl font-extrabold tracking-wide text-transparent">
+        RewardMe
+      </p>
+      <p class="mt-0.5 text-xs text-ink-faint">リボンちゃんと暮らすタスク管理アプリ</p>
+    </div>
+  </div>
+
+  <nav aria-label="メインナビゲーション" class="mt-4.5">
+    <ul class="grid gap-1">
+      <% nav_items.each do |item| %>
+        <%
+          state_classes =
+            if current?(item)
+              "bg-linear-to-r from-brand-pink/20 to-brand-purple/10 text-white inset-ring-1 inset-ring-brand-pink/30"
+            elsif item.navigable?
+              "text-ink-muted hover:bg-white/5 hover:text-ink"
+            else
+              "text-ink-faint"
+            end
+          item_classes = class_names(
+            "flex items-center gap-3 rounded-item px-3.5 py-3 text-sm font-semibold transition",
+            state_classes
+          )
+          aria = { current: ("page" if current?(item)) }
+        %>
+        <li>
+          <% if item.navigable? %>
+            <%= link_to item.path, class: item_classes, aria: aria do %>
+              <span aria-hidden="true" class="w-5 text-center text-base"><%= item.icon %></span>
+              <span><%= item.label %></span>
+            <% end %>
+          <% else %>
+            <%# ルーティングがまだ存在しない項目。
+                href="#" のような行き先のないリンクは作らず、そもそもリンクにしない。
+                （= フォーカスもクリックもできない）
+                そのうえで支援技術には「無効」「準備中」であることを伝える。 %>
+            <%= tag.span(aria: aria.merge(disabled: true), class: class_names(item_classes, "cursor-default")) do %>
+              <span aria-hidden="true" class="w-5 text-center text-base"><%= item.icon %></span>
+              <span><%= item.label %></span>
+              <span class="sr-only">（準備中）</span>
+            <% end %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </nav>
+</aside>

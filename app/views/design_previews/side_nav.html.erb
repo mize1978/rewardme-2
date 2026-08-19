@@ -1,0 +1,6 @@
+<% content_for :title, "SideNavComponent – デザイン確認" %>
+
+<%# 完成モックでは 300px の固定カラムに置かれる。幅はコンポーネント側ではなく置き場所が決める。 %>
+<div class="w-[300px]">
+  <%= render Shared::SideNavComponent.new(current: :home) %>
+</div>
