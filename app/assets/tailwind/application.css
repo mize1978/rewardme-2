@@ -3,7 +3,8 @@
 /*
  * RewardMe 2 デザイントークン
  *
- * 完成モック（rewardme_mock_3.html）の :root 変数を Tailwind の @theme へ移植したもの。
+ * 完成モック（docs/ui-reference/dashboard-mock.html）の :root 変数を Tailwind の @theme へ移植したもの。
+ * 正本の所在と同定の経緯は docs/design-decisions.md の DD-007 を参照。
  * ここで定義した値はそのまま Tailwind のユーティリティ（bg-surface / text-ink など）になるため、
  * 「モックに合わせるための後乗せCSS」を書かずに済ませることを狙っている。
  */

@@ -1,7 +1,7 @@
 module Shared
   # RewardMe のブランド情報と主要画面へのナビゲーションを表示する。
   #
-  # 完成モック（rewardme_mock_3.html）の .nav-col.card を正本とし、
+  # 完成モック（docs/ui-reference/dashboard-mock.html）の .nav-col.card を正本とし、
   # 「ブランド領域」と「ナビゲーション」の2ブロックで構成する。
   #
   # 表示責務のみを持つ。DBアクセス・EXP計算・タスクロジック・成長判定は持たない。

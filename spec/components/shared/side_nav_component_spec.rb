@@ -7,7 +7,7 @@ RSpec.describe Shared::SideNavComponent, type: :component do
 
   let(:options) { {} }
 
-  # 完成モック（rewardme_mock_3.html）の nav.menu と同じ並び。
+  # 完成モック（docs/ui-reference/dashboard-mock.html）の nav.menu と同じ並び。
   let(:nav_labels) do
     [ "ホーム", "タスク", "習慣", "お手紙", "お部屋ショップ", "アチーブメント", "設定" ]
   end
