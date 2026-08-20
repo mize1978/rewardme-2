@@ -157,3 +157,80 @@ i18nの正式導入は別途判断する。
 Signupの時点では使わないため再実装していない。
 
 **パスワード変更機能を施工する際は、`password_challenge` 相当の検証を改めて設計すること。**
+
+---
+
+## DD-005 Taskの操作経路はDashboardに属する最小のリソースで表す
+
+確定日: 2026-08-20
+関連: Task初回施工②（操作経路）
+
+### 背景
+
+`docs/product-specs/task.md` 10章は、route / API の形と
+「完了・完了取消をどの経路で実現するか」を未確定として残している。
+Taskモデルは施工済みで、画面と操作経路だけが繋がっていない状態のため、ここで確定させる。
+
+### 決定
+
+```ruby
+resources :tasks, only: %i[ create destroy ] do
+  resource :completion, only: %i[ create destroy ], module: :tasks
+end
+```
+
+* 作成 … `POST /tasks`
+* 削除 … `DELETE /tasks/:id`
+* 完了 … `POST /tasks/:task_id/completion`
+* 完了取消 … `DELETE /tasks/:task_id/completion`
+
+### 理由
+
+**index / show / new / edit を作らない**
+
+Taskの一覧も作成フォームも、完成モックでは Dashboard の中にある。
+MyRoomと同じく、Taskも独立した画面を持たない（DD-001）。
+実装しないアクションを route に出すと、存在しない画面を期待させる面ができる。
+
+**完了は単数リソース `completion` の create / destroy で表す**
+
+完了は「Taskの属性をひとつ書き換える操作」ではなく、「完了という状態を作る／取り消す」操作である。
+対象は常にそのTask自身であり `:id` で選ぶものではないため単数リソースが適切で、
+ログイン／ログアウトを `resource :session` の create / destroy で表しているのと同じ形になる（DD-002と同じ理由）。
+
+`PATCH /tasks/:id` に completed フラグを送る形にすると、
+「タスクの編集」と「完了操作」が同じ経路に同居し、どちらの意図で来た更新かを
+paramsから推測することになる。
+
+### 今回入れなかったもの
+
+| 対象 | 理由 |
+| --- | --- |
+| `update` | 正本5章の「期日変更」は将来必要になるが、今回の施工対象ではない。編集UIが決まった時点で追加する |
+| エラーメッセージの表示 | 作成フォームがまだDashboardに無いため、置き場所が無い。フォーム施工と同時に足す |
+
+### 補足
+
+**Taskは必ず `Current.user.tasks` から引く**
+
+`Task.find` で引いてから所有者を確かめる形にはしない。
+他人のTaskはそもそも見つからず `RecordNotFound` になる（正本1章）。
+
+**作成に失敗したときはDashboardを422で再描画する**
+
+Signupが `render :new, status: :unprocessable_content` で失敗経路を残しているのと同じ形にする（DD-003）。
+リダイレクトで握り潰すと、before-analysis 9章で問題としている「失敗経路が残らない」状態に戻る。
+エラーの描画自体は上記のとおりフォーム施工で足すため、現時点では
+「作成されないこと」と「422で戻ること」だけが担保される。
+
+**同じ操作を繰り返しても完了時刻を書き換えない**
+
+完了済みのTaskへ再度 `POST completion` が来ても `completed_at` を更新しない。
+更新してしまうと、正本6章の「完了操作をした当日だけ TodayTasks に残る」判定の基準日が
+ユーザーの操作なしにずれる。未完了へ `DELETE completion` が来た場合も同様に何もしない。
+
+### してはならないこと
+
+* `PATCH /tasks/:id` に completed 相当のフラグを渡して完了状態を変える
+* `TasksController` に `complete` / `uncomplete` などのアクションを生やす
+* `Current.user` を経由せず `Task.find` で引く

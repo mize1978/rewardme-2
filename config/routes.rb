@@ -8,6 +8,13 @@ Rails.application.routes.draw do
   resource :session, only: %i[ new create destroy ]
   resource :registration, only: %i[ new create ]
 
+  # Task。一覧も作成フォームも Dashboard の中にあるため、独立した画面は持たない。
+  # 完了は「完了という状態を作る／取り消す」操作なので、単数リソース completion の
+  # create / destroy で表す。詳細は docs/design-decisions.md の DD-005 を参照。
+  resources :tasks, only: %i[ create destroy ] do
+    resource :completion, only: %i[ create destroy ], module: :tasks
+  end
+
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
