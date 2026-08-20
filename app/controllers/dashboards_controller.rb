@@ -3,5 +3,7 @@
 # MyRoom は独立画面ではなくこの Dashboard 内の領域として扱う（docs/design-decisions.md DD-001）。
 class DashboardsController < ApplicationController
   def show
+    # 表示データは Dashboard が定義する（DD-006）。
+    @dashboard = Dashboard.new(user: Current.user)
   end
 end

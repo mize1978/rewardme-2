@@ -234,3 +234,82 @@ Signupが `render :new, status: :unprocessable_content` で失敗経路を残し
 * `PATCH /tasks/:id` に completed 相当のフラグを渡して完了状態を変える
 * `TasksController` に `complete` / `uncomplete` などのアクションを生やす
 * `Current.user` を経由せず `Task.find` で引く
+
+---
+
+## DD-006 Dashboardの表示データは `Dashboard` が定義し、Controllerは組み立てない
+
+確定日: 2026-08-21
+関連: Dashboard基盤施工
+
+### 背景
+
+DD-005 で、Task作成に失敗したとき `TasksController` から `dashboards/show` を描画することにした。
+このときテンプレートだけを借りるため `DashboardsController#show` は通らない。
+
+Dashboardが空のうちは成立するが、カードを載せた時点で
+「成功経路では表示され、422のときだけ壊れる」状態になる。
+before-analysis 9章で問題にした「失敗経路が残らない」の再発にあたる。
+
+原因は、Dashboardを描くのに必要なデータの用意が、暗黙に
+「`DashboardsController` がやっているはず」という約束になっていることである。
+その約束は他のControllerから破れる。
+
+### 決定
+
+Dashboardが必要とするデータは `Dashboard`（`app/models/dashboard.rb`）が定義する。
+ControllerはDashboardを1つ作って渡すだけで、表示データを組み立てない。
+
+```ruby
+# 表示のみを担当するため ApplicationRecord は継承しない。
+class Dashboard
+  def initialize(user:, new_task: nil)
+```
+
+```ruby
+# DashboardsController#show
+@dashboard = Dashboard.new(user: Current.user)
+
+# TasksController#create の失敗時。渡すものが1つ増えるだけで、経路は同じ。
+@dashboard = Dashboard.new(user: Current.user, new_task: task)
+```
+
+### 理由
+
+* Dashboardが何を必要とするかが1ファイルに書かれるため、カードを足したとき両方の経路へ同時に行き渡る。片方だけ壊れる余地がない
+* 完成モックのDashboardは10領域あるが、Controller側は領域が増えても1行のまま。before-analysis 5章の「Viewの肥大化」をControllerへ移し替えることにならない
+* `Dashboard` 単体でspecを書けるため、カレンダーや成長ルームが載っても、request specを経由せず供給側を検証できる
+
+### 表示に必要なivarは `@dashboard` だけにする
+
+`@task` `@today_incomplete` のようなivarをControllerごとに置かない。
+`TasksController#create` では保存対象をローカル変数で扱い、失敗時に `Dashboard` へ渡す。
+ivarが2つ以上に増えると、経路ごとに設定漏れが起きる余地が戻ってくる。
+
+### 今回描画しないもの
+
+| 対象 | 理由 |
+| --- | --- |
+| 完了済みTask | 配置位置が正本10章で未確定。`Dashboard#today_completed` としてデータは定義するが、画面には出さない |
+| 作成フォーム・カードの見た目 | Task UI 施工で完成モックへ接続する |
+
+`dashboards/show` に置いた未完了Taskの一覧は、Dashboardが表示データの入口として
+成立していることを確かめられる最小の描画である。Task UI 施工で
+`Dashboard::TodayTasksComponent` に置き換える。
+
+### Task UI 施工で必ず回収すること
+
+**この暫定の `<ul>` は Task UI 施工の完了時に削除する。**
+`Dashboard::TodayTasksComponent` と二重に描画される状態を残さない。
+
+暫定の描画を残したのは、回帰テストが守りたいものが
+「`Dashboard.new` が呼ばれたこと」ではなく
+「validation failure でも Dashboard が実際に描画可能な状態で返ること」だからである。
+呼び出しの有無を検証する形にすると、`@dashboard` はあるのにViewが必要なデータを
+描画できない、という本来捕まえたい事故を見逃す。
+
+### してはならないこと
+
+* Controller に `@today_incomplete` などの表示用ivarを個別に置く
+* Dashboardの表示データを `DashboardsController` だけが用意する形に戻す
+* View から `Current.user.tasks` を直接引く

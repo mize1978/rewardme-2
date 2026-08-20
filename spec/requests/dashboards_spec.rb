@@ -16,5 +16,27 @@ RSpec.describe "Dashboard", type: :request do
 
       expect(response).to have_http_status(:ok)
     end
+
+    it "今日のタスクが描画される" do
+      user = create(:user)
+      post session_path, params: { email_address: user.email_address, password: "password" }
+      create(:task, user: user, title: "ゴミ出し", due_on: Date.current)
+      create(:task, user: user, title: "来週の下見", due_on: Date.current + 7)
+
+      get root_path
+
+      expect(response.body).to include("ゴミ出し")
+      expect(response.body).not_to include("来週の下見")
+    end
+
+    it "他人のタスクは描画されない" do
+      user = create(:user)
+      post session_path, params: { email_address: user.email_address, password: "password" }
+      create(:task, user: create(:user), title: "他人のタスク", due_on: Date.current)
+
+      get root_path
+
+      expect(response.body).not_to include("他人のタスク")
+    end
   end
 end

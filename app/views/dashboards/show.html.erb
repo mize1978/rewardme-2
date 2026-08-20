@@ -7,3 +7,14 @@
 <div class="w-[300px]">
   <%= render Shared::SideNavComponent.new(current: :home) %>
 </div>
+
+<%# 今日のタスク。Task UI 施工で Dashboard::TodayTasksComponent へ置き換え、
+    完成モックのカードに接続する。ここでは Dashboard が表示データの入口として
+    成立していることを確かめられる最小の描画に留める。
+    完了済みの配置位置は正本10章で未確定のため、まだ出さない。
+    → docs/design-decisions.md DD-006 %>
+<ul>
+  <% @dashboard.today_incomplete.each do |task| %>
+    <li><%= task.title %></li>
+  <% end %>
+</ul>

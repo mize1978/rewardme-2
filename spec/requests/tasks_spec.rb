@@ -45,6 +45,17 @@ RSpec.describe "Tasks", type: :request do
         expect(response).to have_http_status(:unprocessable_content)
       end
 
+      it "title が空で失敗しても、Dashboard の今日のタスクが描画される" do
+        # 表示データを Controller ごとに組み立てていると、成功経路では出て
+        # 422 のときだけ壊れる状態になる。それを検出するための回帰テスト（DD-006）。
+        create(:task, user: user, title: "ゴミ出し", due_on: Date.current)
+
+        post tasks_path, params: { task: { title: "" } }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include("ゴミ出し")
+      end
+
       it "completed_at はユーザーからの入力で決まらない" do
         post tasks_path, params: { task: { title: "ゴミ出し", completed_at: Time.current } }
 

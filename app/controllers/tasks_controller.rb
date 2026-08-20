@@ -3,13 +3,15 @@
 class TasksController < ApplicationController
   def create
     # 他人の Task を作れないよう、必ず Current.user から生やす。
-    @task = Current.user.tasks.build(task_params)
+    task = Current.user.tasks.build(task_params)
 
-    if @task.save
+    if task.save
       redirect_to root_path
     else
       # 失敗経路をリダイレクトで握り潰さない（DD-005）。
+      # 表示データは Dashboard が定義するため、ここで組み立てない（DD-006）。
       # エラーの描画は作成フォームを Dashboard へ載せる施工で足す。
+      @dashboard = Dashboard.new(user: Current.user, new_task: task)
       render "dashboards/show", status: :unprocessable_content
     end
   end
