@@ -45,6 +45,15 @@ RSpec.describe "Tasks", type: :request do
         expect(response).to have_http_status(:unprocessable_content)
       end
 
+      it "title が空で失敗したら、入力値とエラーを保ったままフォームを開いて返す" do
+        post tasks_path, params: { task: { title: "", due_on: "2026-08-25" } }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include("タスク名を入力してください")
+        expect(response.body).to include('data-task-form-open-value="true"')
+        expect(response.body).to include('value="2026-08-25"')
+      end
+
       it "title が空で失敗しても、Dashboard の今日のタスクが描画される" do
         # 表示データを Controller ごとに組み立てていると、成功経路では出て
         # 422 のときだけ壊れる状態になる。それを検出するための回帰テスト（DD-006）。
@@ -54,6 +63,7 @@ RSpec.describe "Tasks", type: :request do
 
         expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include("ゴミ出し")
+        expect(Nokogiri::HTML(response.body).text.scan("ゴミ出し").size).to eq(1)
       end
 
       it "completed_at はユーザーからの入力で決まらない" do

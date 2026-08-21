@@ -1,20 +1,14 @@
 <% content_for :title, "Dashboard – RewardMe" %>
 
 <%# 完成モックの4カラム構成をここへ組み上げていく。
-    現時点では SideNav のみを配置する。トップバー・ヒーロー（MyRoom）・カレンダー等の
-    各カードは後続の施工で追加する。MyRoom は独立画面ではなくこの Dashboard 内の領域として扱う。
+    現時点では SideNav と今日のタスクを配置している。トップバー・ヒーロー（MyRoom）・
+    カレンダー等の各カードは後続の施工で追加する。MyRoom は独立画面ではなくこの Dashboard 内の領域として扱う。
     → docs/design-decisions.md DD-001 %>
 <div class="w-[300px]">
   <%= render Shared::SideNavComponent.new(current: :home) %>
 </div>
 
-<%# 今日のタスク。Task UI 施工で Dashboard::TodayTasksComponent へ置き換え、
-    完成モックのカードに接続する。ここでは Dashboard が表示データの入口として
-    成立していることを確かめられる最小の描画に留める。
-    完了済みの配置位置は正本10章で未確定のため、まだ出さない。
-    → docs/design-decisions.md DD-006 %>
-<ul>
-  <% @dashboard.today_incomplete.each do |task| %>
-    <li><%= task.title %></li>
-  <% end %>
-</ul>
+<%# 今日のタスク。データは Dashboard が供給する（DD-006）。
+    完了済みの配置は正本10章で未確定のため、ここでは未完了だけを描く（DD-008）。 %>
+<%= render Dashboard::TodayTasksComponent.new(tasks: @dashboard.today_incomplete,
+                                              new_task: @dashboard.new_task) %>

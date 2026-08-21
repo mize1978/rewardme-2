@@ -1,0 +1,16 @@
+<%#
+  完成モック（docs/ui-reference/dashboard-mock.html）の .task に対応する。
+  タグ（category）・★（priority）・EXP は正本2章・9章により作らない（DD-008）。
+%>
+<div class="flex items-center gap-3 border-b border-white/[0.05] px-1 py-2.5 last:border-b-0">
+  <%= button_to task_completion_path(task), method: toggle_method,
+        class: "grid size-5.5 flex-none place-items-center rounded-full border text-xs transition " +
+               (task.completed? ? "border-transparent bg-linear-to-br from-[#ff7ab8] to-[#d76bd0] text-white" : "border-white/[0.13] text-ink-faint"),
+        aria: { label: toggle_label } do %>
+    <span aria-hidden="true"><%= "✓" if task.completed? %></span>
+  <% end %>
+
+  <span class="flex-1 text-[13.5px] font-semibold <%= "text-ink-muted line-through decoration-white/25" if task.completed? %>">
+    <%= task.title %>
+  </span>
+</div>

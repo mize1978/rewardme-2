@@ -1,0 +1,53 @@
+<%#
+  完成モック（docs/ui-reference/dashboard-mock.html）の .tasks.card に対応する領域。
+  カードの骨格・余白・区切り線はモックどおり。ミッション行は別ドメインのため作らない（DD-008）。
+%>
+<section data-controller="task-form" data-task-form-open-value="<%= form_open? %>"
+         class="rounded-card border border-hairline bg-surface bg-linear-to-b from-white/[0.035] to-transparent px-5 py-4.5 shadow-card">
+  <div class="mb-3.5 flex items-center justify-between gap-2">
+    <h2 class="text-[15px] font-bold text-brand-pink-soft">今日のタスク</h2>
+
+    <%# 開閉だけを Stimulus が受け持つ。作成そのものは下のフォームがサーバへ送る（DD-008）。 %>
+    <button type="button" data-task-form-target="opener" data-action="task-form#open"
+            class="rounded-full bg-linear-to-r from-[#ff7ab8] to-[#c86bd8] px-3.5 py-1.5 text-xs font-bold text-white">
+      ＋ 追加
+    </button>
+  </div>
+
+  <%# 開いた状態はサーバが描く。Stimulus が動かなくても、422のフォームは見えたままにする（DD-008）。 %>
+  <div data-task-form-target="panel"<%= " hidden" unless form_open? %> class="mb-3.5">
+    <%= form_with model: new_task, url: tasks_path, class: "grid gap-2" do |form| %>
+      <%= form.label :title, "タスク名", class: "text-xs font-semibold text-ink-muted" %>
+      <%= form.text_field :title, autocomplete: "off",
+            class: "rounded-item border border-hairline bg-app-bg px-3 py-2 text-[13.5px] text-ink" %>
+
+      <%# エラーは full_messages ではなく属性ごとに描く（DD-004）。 %>
+      <% new_task.errors[:title].each do |message| %>
+        <p class="text-xs font-semibold text-danger"><%= message %></p>
+      <% end %>
+
+      <%= form.label :due_on, "期日（任意）", class: "mt-1 text-xs font-semibold text-ink-muted" %>
+      <%= form.date_field :due_on,
+            class: "rounded-item border border-hairline bg-app-bg px-3 py-2 text-[13.5px] text-ink" %>
+
+      <div class="mt-1 flex items-center gap-2">
+        <%= form.submit "保存",
+              class: "rounded-full bg-linear-to-r from-[#ff7ab8] to-[#c86bd8] px-4 py-1.5 text-xs font-bold text-white" %>
+        <button type="button" data-action="task-form#close"
+                class="rounded-full border border-hairline px-4 py-1.5 text-xs font-bold text-ink-muted">
+          キャンセル
+        </button>
+      </div>
+    <% end %>
+  </div>
+
+  <% if tasks.any? %>
+    <div>
+      <% tasks.each do |task| %>
+        <%= render Dashboard::TaskComponent.new(task: task) %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="px-1 py-2.5 text-[13.5px] text-ink-faint">今日のタスクはまだありません。</p>
+  <% end %>
+</section>
